@@ -25,9 +25,12 @@ module.exports = {
     let matchWinRate = data.match_played > 0 ? (data.match_wins || 0 / data.match_played) * 100 : 0;
     let embed = new EmbedBuilder()
       .setColor(0x0099FF)
-      .setDescription(`
-        Username: ${data.username}\nTournament wins: ${data.tournament_wins} / Tournament joined ${data.tournament_joined || 1} (${tournamentWinRate}%)\nMatch wins: ${data.match_wins} / Match joined ${data.match_played} (${matchWinRate}%)\nTotal Earnings: ${data.total_earning}\n
-      `)
-    await interaction.reply({ ephemeral: false, embeds: [embed] })
+      .addFields(
+        { name: "Username", value: data.username },
+        { name: "Tournament Stats", value: `Tournament wins: ${data.tournament_wins} / Tournament joined ${data.tournament_joined || 1} (${tournamentWinRate}%)` },
+        { name: "Match stats", value: `Match wins: ${data.match_wins} / Match joined ${data.match_played} (${matchWinRate}%)` },
+        { name: "Total Earnings", value: data.total_earning?.toString() }
+      )
+    await interaction.reply({ embeds: [embed] })
 	},
 };
