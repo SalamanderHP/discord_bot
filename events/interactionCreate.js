@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, Events } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, EmbedBuilder } = require('discord.js');
 const { request } = require('undici');
 
 module.exports = {
@@ -39,6 +39,9 @@ const ladderGameButtonHandle = async (interaction) => {
 	if (gameId) {
 		let response = await request(`${process.env.API_SERVER}/des-bot/get-ladder-by-game?game=${gameId}`);
 		let { data } = await response.body.json();
+		let embed = new EmbedBuilder()
+			.setColor(0x0099FF)
+			.setTitle(`Ladders`)
 		let row = new ActionRowBuilder();
 		data.map(ladder => {
 			row.addComponents(
@@ -49,7 +52,7 @@ const ladderGameButtonHandle = async (interaction) => {
 			)
 		});
 
-		await interaction.reply({ content: "Ladders", components: [row] });
+		await interaction.reply({ embeds: [embed], components: [row] });
 	}
 }
 
@@ -61,19 +64,21 @@ const ladderButtonHandle = async (interaction) => {
 		console.log(ladderId, response);
 		let { data } = await response.body.json();
 		let ladderInfo = data?.ladder;
-		let responseString = `Ladder: ${ladderInfo.title}\n`
-			+ `Game: ${ladderInfo.game_config.game.name}\n`
-			+ `Status: ${ladderInfo.status}\n`
-			+ `Hosted by: ${ladderInfo.organizer}\n`
-			+ `Time: ${ladderInfo.start_time} - ${ladderInfo.end_time}\n`
-			+ `Prizepool: ${ladderInfo.prize_pool?.total_prize}\n`
-			+ `Game mode: ${ladderInfo.game_config?.config?.match_record_condition?.game_mode?.mode?.[0]}\n`
-			+ `Rank: [Rank] - [Rank]\n`
-			+ `Region: ${ladderInfo.game_config?.config?.overall?.region?.[0]}\n`
-			+ `Entry fee: ${ladderInfo.registration_fee?.amount}\n`
-			+ `Participants(s): ${ladderInfo.players?.length}/${ladderInfo.max_player}\n`
-			+ `Prize Distribution: 1st [TBA] / 1st [team name]\n`
-			+ "Join this ladder?";
+		let embed = new EmbedBuilder()
+      .setColor(0x0099FF)
+			.addFields(
+				{ name: 'Game', value: ladderInfo.game_config.game.name },
+				{ name: 'Status', value: ladderInfo.status },
+				{ name: 'Hosted by', value: `${ladderInfo.start_time} - ${ladderInfo.end_time}` },
+				{ name: 'Prizepool', value: ladderInfo.prize_pool?.total_prize?.toString() },
+				{ name: 'Game mode', value: ladderInfo.game_config?.config?.match_record_condition?.game_mode?.mode?.[0]?.toString() || "Mode" },
+				{ name: 'Rank', value: `[Rank] - [Rank]` },
+				{ name: 'Region', value: ladderInfo.game_config?.config?.overall?.region?.[0]?.toString() },
+				{ name: 'Entry fee', value: ladderInfo.registration_fee?.amount?.toString() },
+				{ name: 'Participants(s)', value: `${ladderInfo.players?.length}/${ladderInfo.max_player}`?.toString() },
+				{ name: 'Prize Distribution', value: `1st [TBA] / 1st [team name]` },
+			)
+			.setFooter({ text: "Join ladder?" })
 		let row = new ActionRowBuilder();
 		row.addComponents(
 			new ButtonBuilder()
@@ -88,6 +93,6 @@ const ladderButtonHandle = async (interaction) => {
 				.setStyle(ButtonStyle.Danger)
 		)
 
-		interaction.reply({content: responseString, components: [row]});
+		interaction.reply({embeds: [embed], components: [row]});
 	}
 }

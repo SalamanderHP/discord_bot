@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { request } = require('undici');
 
 module.exports = {
@@ -23,8 +23,11 @@ module.exports = {
     }
     let tournamentWinRate = data.tournament_joined > 0 ? (data.tournament_wins || 0 / data.tournament_joined) * 100 : 0;
     let matchWinRate = data.match_played > 0 ? (data.match_wins || 0 / data.match_played) * 100 : 0;
-    interaction.reply(`
-      Username: ${data.username}\nTournament wins: ${data.tournament_wins} / Tournament joined ${data.tournament_joined || 1} (${tournamentWinRate}%)\nMatch wins: ${data.match_wins} / Match joined ${data.match_played} (${matchWinRate}%)\nTotal Earnings: ${data.total_earning}\n
-    `)
+    let embed = new EmbedBuilder()
+      .setColor(0x0099FF)
+      .setDescription(`
+        Username: ${data.username}\nTournament wins: ${data.tournament_wins} / Tournament joined ${data.tournament_joined || 1} (${tournamentWinRate}%)\nMatch wins: ${data.match_wins} / Match joined ${data.match_played} (${matchWinRate}%)\nTotal Earnings: ${data.total_earning}\n
+      `)
+    await interaction.reply({ ephemeral: false, embeds: [embed] })
 	},
 };

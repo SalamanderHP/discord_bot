@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, } = require('discord.js');
 const { request } = require('undici');
 
 module.exports = {
@@ -32,7 +32,11 @@ module.exports = {
         )
       });
 
-      await interaction.reply({ content: "Select game to display ladders", components: [row] });
+      let embed = new EmbedBuilder()
+        .setColor(0x0099FF)
+        .setTitle(`Select game to display ladders`)
+
+      await interaction.reply({ embeds: [embed], components: [row] });
     }
 	},
 };
