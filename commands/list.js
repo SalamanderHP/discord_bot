@@ -37,6 +37,33 @@ module.exports = {
         .setTitle(`Select game to display ladders`)
 
       await interaction.reply({ embeds: [embed], components: [row] });
+      return;
+    } else if (listType === "tournament") {
+      let discordId = !interaction.user?.bot ? interaction.user?.id : null;
+      if (discordId) {
+        let response = await request(`${process.env.API_SERVER}/des-bot/get-user-tournaments?discord_id=${discordId}`);
+        const { data } = await response.body.json();
+        if (!data) {
+          interaction.reply(`No data`);
+          return;
+        }
+
+        let tournamentRow = new ActionRowBuilder();
+        data.tournaments?.map(tournament => {
+          tournamentRow.addComponents(
+            new ButtonBuilder()
+              .setCustomId(`user-tournament-${tournament._id}`)
+              .setLabel(tournament.name)
+              .setStyle(ButtonStyle.Primary)
+          )
+        });
+        let embed = new EmbedBuilder()
+          .setColor(0x0099FF)
+          .setTitle(`You have organized ${data?.totalTournament} tournament(s)`)
+
+        await interaction.reply({ embeds: [embed], components: [tournamentRow] });
+      }
+      return;
     }
 	},
 };

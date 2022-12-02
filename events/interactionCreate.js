@@ -14,6 +14,10 @@ module.exports = {
 				await ladderButtonHandle(interaction);
 				return;
 			}
+			if (interaction.customId.includes('user-tournament')) {
+				await userTournamentButtonHandle(interaction);
+				return;
+			}
 		}
 		if (!interaction.isChatInputCommand()) return;
 
@@ -99,6 +103,50 @@ const ladderButtonHandle = async (interaction) => {
 				{ name: 'Entry fee', value: ladderInfo.registration_fee?.amount?.toString() },
 				{ name: 'Participants(s)', value: `${ladderInfo.players?.length}/${ladderInfo.max_player}`?.toString() },
 				{ name: 'Prize Distribution', value: `1st [TBA] / 1st [team name]` },
+			)
+
+		interaction.reply({embeds: [embed]});
+	}
+}
+
+const userTournamentButtonHandle = async (interaction) => {
+	let tournamentId = interaction.customId.split("-");
+	tournamentId = tournamentId?.[2];
+	if (tournamentId) {
+		let response = await request(`${process.env.API_SERVER}/tournament/detail?_id=${tournamentId}`);
+		let { data } = await response.body.json();
+		let stageName = "";
+		let sponsorName = "";
+		data?.stages?.map((stage, index) => {
+			if (index === 0) {
+				stageName = stage.title;
+				return;
+			}
+			stageName = stageName + " - " + stage.title;
+		});
+		data?.sponsors?.map((sponsor, index) => {
+			if (index === 0) {
+				sponsorName = sponsor.title;
+				return;
+			}
+			sponsorName = sponsorName + " - " + sponsor.name;
+		});
+
+		let embed = new EmbedBuilder()
+      .setColor(0x0099FF)
+			.addFields(
+				{ name: 'Tournament', value: data.name },
+				{ name: 'Game', value: data.game.display_name },
+				{ name: 'Status', value: data.operating?.status?.toString() || " No data" },
+				{ name: 'Hosted by', value: data.guild?.name?.toString() || "No data" },
+				{ name: 'Time', value: `${data.operating?.start_time} - ${data.operating?.end_time}` },
+				{ name: 'Prizepool', value: data.total_prize?.toString() },
+				{ name: 'Game mode', value: data?.game_mode?.display_name?.toString() || "No data" },
+				{ name: 'Entry fee', value: data.registration?.fee?.quantity?.toString() || "0" },
+				{ name: 'Team(s) joined', value: `${data?.teams?.length}` || "0" },
+				{ name: 'Sponsors', value: sponsorName?.toString() || "No data" },
+				{ name: 'Prize Distribution', value: `1st [TBA] / 1st [team name]` },
+				{ name: 'Stages', value: stageName?.toString() || "No data" },
 			)
 
 		interaction.reply({embeds: [embed]});
